@@ -12,8 +12,9 @@ This is a RESTful API built using **Express.js**, **Sequelize ORM**, and **MySQL
 - 🔁 Associations:
   - One Teacher teaches many Courses
   - Many Students enroll in many Courses (Many-to-Many)
-- 📚 Swagger documentation (`/api-docs`)
+- 📚 Swagger documentation (`/docs`)
 - 🧪 Faker.js seeder for generating test data
+- 📄 **Pagination, Sorting, and Populate (Eager Loading) support for all resources**
 
 ---
 

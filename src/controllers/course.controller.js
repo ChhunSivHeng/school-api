@@ -55,30 +55,41 @@ export const createCourse = async (req, res) => {
  *         name: limit
  *         schema: { type: integer, default: 10 }
  *         description: Number of items per page
+ *       - in: query
+ *         name: sort
+ *         schema: { type: string, enum: [asc, desc], default: asc }
+ *         description: Sort order by created time
+ *       - in: query
+ *         name: populate
+ *         schema: { type: string, enum: [Teacher, Student] }
+ *         description: Populate related models (Teacher, Student)
  *     responses:
  *       200:
  *         description: List of courses
  */
 export const getAllCourses = async (req, res) => {
-
-    // take certain amount at a time
     const limit = parseInt(req.query.limit) || 10;
-    // which page to take
     const page = parseInt(req.query.page) || 1;
+    const sort = req.query.sort === 'desc' ? 'DESC' : 'ASC';
+    const populate = req.query.populate ? req.query.populate.split(',') : [];
 
-    const total = await db.Course.count();
+    // Build include array for eager loading
+    const include = [];
+    if (populate.includes('Teacher')) include.push(db.Teacher);
+    if (populate.includes('Student')) include.push(db.Student);
 
     try {
-        const courses = await db.Course.findAll(
-            {
-                // include: [db.Student, db.Teacher],
-                limit: limit, offset: (page - 1) * limit
-            }
-        );
+        const total = await db.Course.count();
+        const courses = await db.Course.findAll({
+            include,
+            limit,
+            offset: (page - 1) * limit,
+            order: [['createdAt', sort]],
+        });
         res.json({
             meta: {
                 totalItems: total,
-                page: page,
+                page,
                 totalPages: Math.ceil(total / limit),
             },
             data: courses,
@@ -99,6 +110,10 @@ export const getAllCourses = async (req, res) => {
  *         name: id
  *         required: true
  *         schema: { type: integer }
+ *       - in: query
+ *         name: populate
+ *         schema: { type: string, enum: [Teacher, Student] }
+ *         description: Populate related models (Teacher, Student)
  *     responses:
  *       200:
  *         description: Course found
